@@ -1,4 +1,4 @@
-import { DashboardHeader } from "@/components/dashboard";
+import { Navbar } from "@/components/navbar";
 
 export default function DashboardLayout({
   children,
@@ -7,7 +7,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Navbar />
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
