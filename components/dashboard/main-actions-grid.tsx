@@ -14,7 +14,7 @@ export function MainActionsGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <MenuCard icon={Calendar} title="Agendamento" />
-      <MenuCard icon={FileText} title="Fila de Atendimento" />
+      <MenuCard icon={FileText} title="Fila de Atendimento" href="/fila-atendimento" />
       <MenuCard icon={UserCircle} title="Clientes" />
       <MenuCard icon={Settings} title="Configurações" />
       <MenuCard icon={Monitor} title="Monitor" />
