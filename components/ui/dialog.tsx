@@ -43,6 +43,20 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     };
   }, [open]);
 
+  // Fechar com ESC
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onOpenChange]);
+
   if (!open) return null;
 
   return (
@@ -105,7 +119,8 @@ export function DialogClose({ onClose }: { onClose: () => void }) {
   return (
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+      className="absolute top-8 right-10 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100 p-1"
+      aria-label="Fechar"
     >
       <X className="w-5 h-5" />
     </button>
