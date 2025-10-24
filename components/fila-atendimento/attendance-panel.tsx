@@ -17,6 +17,11 @@ interface AttendancePanelProps {
   isPaused?: boolean;
   currentLocation?: string;
   attendanceStartTime?: Date;
+  isCallCooldown?: boolean;
+  cooldownSeconds?: number;
+  autoCallCountdown?: number;
+  isCallAgainCooldown?: boolean;
+  callAgainCooldownSeconds?: number;
   onCallNext?: () => void;
   onChangeLocation?: () => void;
   onPauseService?: () => void;
@@ -42,6 +47,11 @@ export function AttendancePanel({
   isPaused = false,
   currentLocation = "GUICHE-1",
   attendanceStartTime,
+  isCallCooldown = false,
+  cooldownSeconds = 0,
+  autoCallCountdown = 0,
+  isCallAgainCooldown = false,
+  callAgainCooldownSeconds = 0,
   onCallNext,
   onChangeLocation,
   onPauseService,
@@ -84,12 +94,46 @@ export function AttendancePanel({
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Painel de Controle</h2>
             
+            {/* Alerta de Chamada Automática */}
+            {autoCallCountdown > 0 && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 flex items-center justify-between animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-500 rounded-full p-2">
+                    <Megaphone className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">🤖 Chamada Automática Ativa</p>
+                    <p className="text-xs text-green-700">Próxima senha será chamada automaticamente</p>
+                  </div>
+                </div>
+                <div className="bg-green-600 text-white rounded-lg px-4 py-2">
+                  <p className="text-xs font-medium">em</p>
+                  <p className="text-3xl font-bold">{autoCallCountdown}s</p>
+                </div>
+              </div>
+            )}
+            
             {/* Botão Chamar e Local Atual - Lado a Lado */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Botão Chamar Próxima Senha */}
-              <Button onClick={onCallNext} className="h-full min-h-[80px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all">
+              <Button 
+                onClick={onCallNext} 
+                disabled={isCallCooldown}
+                className={`h-full min-h-[80px] font-bold text-lg shadow-lg transition-all ${
+                  isCallCooldown 
+                    ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400' 
+                    : 'bg-blue-600 hover:bg-blue-700 hover:shadow-xl'
+                } text-white`}
+              >
                 <Megaphone className="w-6 h-6 mr-3" />
-                Chamar Próxima Senha
+                {isCallCooldown ? (
+                  <span className="flex flex-col items-center">
+                    <span>Aguarde...</span>
+                    <span className="text-2xl font-bold mt-1">{cooldownSeconds}s</span>
+                  </span>
+                ) : (
+                  'Chamar Próxima Senha'
+                )}
               </Button>
               
               {/* Local Atual */}
@@ -186,9 +230,24 @@ export function AttendancePanel({
                 </div>
                 {!isServiceStarted ? (
                   <div className="grid grid-cols-3 gap-3 mt-6">
-                    <Button onClick={onCallAgain} variant="outline" className="flex flex-col items-center justify-center h-20 gap-1.5 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all">
-                      <Megaphone className="w-5 h-5 text-gray-600" />
-                      <span className="text-xs font-medium text-gray-700">Chamar Novamente</span>
+                    <Button 
+                      onClick={onCallAgain} 
+                      disabled={isCallAgainCooldown}
+                      variant="outline" 
+                      className={`flex flex-col items-center justify-center h-20 gap-1.5 border-2 transition-all ${
+                        isCallAgainCooldown 
+                          ? 'border-gray-200 bg-gray-100 cursor-not-allowed opacity-60' 
+                          : 'border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                      }`}
+                    >
+                      <Megaphone className={`w-5 h-5 ${isCallAgainCooldown ? 'text-gray-400' : 'text-gray-600'}`} />
+                      {isCallAgainCooldown ? (
+                        <span className="text-xs font-medium text-gray-500">
+                          Aguarde {callAgainCooldownSeconds}s
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-gray-700">Chamar Novamente</span>
+                      )}
                     </Button>
                     <Button onClick={onStartService} disabled={isStartingService || isPaused} className="flex flex-col items-center justify-center h-20 gap-1.5 bg-blue-600 hover:bg-blue-700 transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed">
                       {isStartingService ? (

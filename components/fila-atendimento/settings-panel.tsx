@@ -7,6 +7,8 @@ interface SettingsPanelProps {
   onKeyboardShortcutsChange: (enabled: boolean) => void;
   autoCall: boolean;
   onAutoCallChange: (enabled: boolean) => void;
+  autoNoShowOnSecondCall: boolean;
+  onAutoNoShowOnSecondCallChange: (enabled: boolean) => void;
 }
 
 export function SettingsPanel({
@@ -16,6 +18,8 @@ export function SettingsPanel({
   onKeyboardShortcutsChange,
   autoCall,
   onAutoCallChange,
+  autoNoShowOnSecondCall,
+  onAutoNoShowOnSecondCallChange,
 }: SettingsPanelProps) {
   return (
     <div className="space-y-4">
@@ -48,9 +52,9 @@ export function SettingsPanel({
               ⌨️ Atalhos de Teclado
             </h3>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Use atalhos rápidos: <span className="font-mono bg-gray-100 px-1 rounded">F1</span> Chamar, 
-              <span className="font-mono bg-gray-100 px-1 rounded ml-1">F2</span> Repetir, 
-              <span className="font-mono bg-gray-100 px-1 rounded ml-1">F3</span> Cancelar
+              Atalhos: <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded font-semibold">F1</span> Chamar/Repetir, 
+              <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded font-semibold ml-1">F2</span> Iniciar/Encerrar, 
+              <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded font-semibold ml-1">F3</span> Não Compareceu/Erro
             </p>
           </div>
           <ToggleSwitch
@@ -76,6 +80,25 @@ export function SettingsPanel({
             id="auto-call"
             enabled={autoCall}
             onChange={onAutoCallChange}
+          />
+        </div>
+      </div>
+
+      {/* Não compareceu automático na 2ª chamada */}
+      <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">
+              🚫 Não Compareceu Automático
+            </h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Marca automaticamente como "não compareceu" ao chamar a mesma senha pela 2ª vez
+            </p>
+          </div>
+          <ToggleSwitch
+            id="auto-no-show"
+            enabled={autoNoShowOnSecondCall}
+            onChange={onAutoNoShowOnSecondCallChange}
           />
         </div>
       </div>
