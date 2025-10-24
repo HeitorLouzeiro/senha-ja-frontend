@@ -21,6 +21,18 @@ export function PauseOverlay({ pauseReason, onResume }: PauseOverlayProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Fechar com ESC
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onResume();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onResume]);
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
