@@ -4,16 +4,15 @@ import { useState } from "react";
 import {
   UnitHeader,
   ServiceList,
-  CallNextButton,
-  LocationSelector,
   SettingsPanel,
   QueueTable,
   AttendancePanel,
-  ActionButtons,
   CancelTicketDialog,
   NoShowDialog,
   FinishServiceDialog,
   TriageErrorDialog,
+  PauseDialog,
+  PauseOverlay,
 } from "@/components/fila-atendimento";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -160,6 +159,7 @@ export default function FilaAtendimentoPage() {
     priority: string;
     clientName: string;
     clientDocument: string;
+    startTime: Date;
   } | null>(null);
 
   // Estado para o dialog de cancelamento
@@ -174,6 +174,9 @@ export default function FilaAtendimentoPage() {
   const [triageErrorDialogOpen, setTriageErrorDialogOpen] = useState(false);
   const [isServiceStarted, setIsServiceStarted] = useState(false);
   const [isStartingService, setIsStartingService] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+  const [pauseReason, setPauseReason] = useState("");
 
   // 🏥 SERVIÇOS DISPONÍVEIS - 7 tipos diferentes
   const services = [
@@ -197,6 +200,7 @@ export default function FilaAtendimentoPage() {
         priority: nextInQueue.priority,
         clientName: nextInQueue.name,
         clientDocument: "123.456.789-00",
+        startTime: new Date(),
       });
     } else {
       setCurrentAttendance({
@@ -205,6 +209,7 @@ export default function FilaAtendimentoPage() {
         priority: "Normal",
         clientName: "João Silva",
         clientDocument: "123.456.789-00",
+        startTime: new Date(),
       });
     }
   };
@@ -239,6 +244,7 @@ export default function FilaAtendimentoPage() {
     // Implementar lógica de não compareceu (chamar API)
     setCurrentAttendance(null);
     setIsServiceStarted(false);
+    setIsPaused(false);
     setNoShowDialogOpen(false);
   };
 
@@ -259,6 +265,7 @@ export default function FilaAtendimentoPage() {
     // Implementar lógica de encerrar atendimento (chamar API)
     setCurrentAttendance(null);
     setIsServiceStarted(false);
+    setIsPaused(false);
     setFinishServiceDialogOpen(false);
   };
 
@@ -274,12 +281,31 @@ export default function FilaAtendimentoPage() {
     // Implementar lógica de erro de triagem (chamar API, redirecionar)
     setCurrentAttendance(null);
     setIsServiceStarted(false);
+    setIsPaused(false);
     setTriageErrorDialogOpen(false);
   };
 
   const handleChangeLocation = () => {
     console.log("Alterar local");
     // Implementar lógica de alterar local
+  };
+
+  const handlePauseService = () => {
+    setPauseDialogOpen(true);
+  };
+
+  const handleConfirmPause = (reason: string) => {
+    console.log("Pausando atendimento");
+    console.log(`Motivo: ${reason}`);
+    setPauseReason(reason);
+    setIsPaused(true);
+    setPauseDialogOpen(false);
+  };
+
+  const handleResumeService = () => {
+    console.log("Retomando atendimento");
+    setIsPaused(false);
+    setPauseReason("");
   };
 
   const handlePageChange = (page: number) => {
@@ -300,6 +326,7 @@ export default function FilaAtendimentoPage() {
       priority: item.priority,
       clientName: item.name,
       clientDocument: "123.456.789-00",
+      startTime: new Date(),
     });
   };
 
@@ -314,6 +341,7 @@ export default function FilaAtendimentoPage() {
         priority: item.priority,
         clientName: item.name,
         clientDocument: "123.456.789-00",
+        startTime: new Date(),
       });
     }
     
@@ -344,51 +372,36 @@ export default function FilaAtendimentoPage() {
           {/* Cabeçalho com nome da unidade */}
           <UnitHeader unitName="GUICHE-1" />
 
-          {/* Painel de Atendimento Atual - Destaque quando há atendimento ativo */}
-          {currentAttendance && (
-            <div className="animate-in fade-in duration-300">
-              <AttendancePanel
-                ticketNumber={currentAttendance.ticketNumber}
-                service={currentAttendance.service}
-                priority={currentAttendance.priority}
-                clientName={currentAttendance.clientName}
-                clientDocument={currentAttendance.clientDocument}
-                isServiceStarted={isServiceStarted}
-                isStartingService={isStartingService}
-                onCallAgain={handleCallAgain}
-                onStartService={handleStartService}
-                onNoShow={handleNoShow}
-                onFinishService={handleFinishService}
-                onTriageError={handleTriageError}
-              />
-            </div>
-          )}
+          {/* Painel de Atendimento / Controle */}
+          <AttendancePanel
+            hasActiveAttendance={currentAttendance !== null}
+            ticketNumber={currentAttendance?.ticketNumber}
+            service={currentAttendance?.service}
+            priority={currentAttendance?.priority}
+            clientName={currentAttendance?.clientName}
+            clientDocument={currentAttendance?.clientDocument}
+            isServiceStarted={isServiceStarted}
+            isStartingService={isStartingService}
+            isPaused={isPaused}
+            currentLocation="GUICHE-1"
+            attendanceStartTime={currentAttendance?.startTime}
+            onCallNext={handleCallNext}
+            onChangeLocation={handleChangeLocation}
+            onPauseService={handlePauseService}
+            onResumeService={handleResumeService}
+            onConsultTicket={() => console.log("Consultar senha")}
+            onEnableNotification={() => console.log("Habilitar notificação")}
+            onCallAgain={handleCallAgain}
+            onStartService={handleStartService}
+            onNoShow={handleNoShow}
+            onFinishService={handleFinishService}
+            onTriageError={handleTriageError}
+          />
 
           {/* Layout Principal - Grade Responsiva */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6">
-            {/* Coluna Esquerda - Controles e Serviços */}
-            <aside className="xl:col-span-3 2xl:col-span-2 space-y-4">
-
-              {/* Botão Chamar Próxima Senha */}
-              <CallNextButton onClick={handleCallNext} />
-
-              {/* Seletor de Local */}
-              <LocationSelector
-                currentLocation="GUICHE-1"
-                onChangeLocation={handleChangeLocation}
-              />
-
-              {/* Botões de Ação Adicionais */}
-              <div className="hidden xl:block">
-                <ActionButtons
-                  onConsultTicket={() => console.log("Consultar senha")}
-                  onEnableNotification={() => console.log("Habilitar notificação")}
-                />
-              </div>
-            </aside>
-
-            {/* Coluna Central - Tabela de Filas */}
-            <section className="xl:col-span-6 2xl:col-span-7">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+            {/* Coluna Esquerda - Tabela de Filas */}
+            <section className="lg:col-span-2">
               <QueueTable
                 items={queueItems}
                 currentPage={currentPage}
@@ -402,7 +415,7 @@ export default function FilaAtendimentoPage() {
             </section>
 
             {/* Coluna Direita - Painel de Configurações */}
-            <aside className="xl:col-span-3 2xl:col-span-3">
+            <aside className="lg:col-span-1">
               <div className="sticky top-6">
                 <SettingsPanel
                   newPasswordAlert={newPasswordAlert}
@@ -414,14 +427,6 @@ export default function FilaAtendimentoPage() {
                 />
               </div>
             </aside>
-          </div>
-
-          {/* Botões de Ação Mobile - Aparecem apenas em telas menores */}
-          <div className="xl:hidden">
-            <ActionButtons
-              onConsultTicket={() => console.log("Consultar senha")}
-              onEnableNotification={() => console.log("Habilitar notificação")}
-            />
           </div>
         </div>
       </main>
@@ -464,6 +469,21 @@ export default function FilaAtendimentoPage() {
         ticketNumber={currentAttendance?.ticketNumber}
         currentService={currentAttendance?.service}
       />
+
+      {/* Dialog de Pausar Atendimento */}
+      <PauseDialog
+        open={pauseDialogOpen}
+        onOpenChange={setPauseDialogOpen}
+        onConfirm={handleConfirmPause}
+      />
+
+      {/* Overlay de Pausa - Bloqueia toda a tela */}
+      {isPaused && (
+        <PauseOverlay
+          pauseReason={pauseReason || ''}
+          onResume={handleResumeService}
+        />
+      )}
     </div>
   );
 }

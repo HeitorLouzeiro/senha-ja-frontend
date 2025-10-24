@@ -142,32 +142,40 @@ export function QueueTable({
                   <td className="px-4 py-3 text-sm text-gray-900">
                     <div className="flex items-center gap-2">
                       {/* Botão Chamar Senha */}
-                      <button
-                        onClick={() => !isServiceInProgress && onCallTicket && onCallTicket(item.passwordArrival.split(" - ")[0], item)}
-                        disabled={isServiceInProgress}
-                        className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
-                          isServiceInProgress
-                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                            : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-                        }`}
-                        title={isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Chamar senha"}
-                      >
-                        📢 Chamar
-                      </button>
+                      <div className="relative group">
+                        <button
+                          onClick={() => !isServiceInProgress && onCallTicket && onCallTicket(item.passwordArrival.split(" - ")[0], item)}
+                          disabled={isServiceInProgress}
+                          className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
+                            isServiceInProgress
+                              ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                              : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                          }`}
+                        >
+                          📢 Chamar
+                        </button>
+                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                          {isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Chamar senha"}
+                        </span>
+                      </div>
                       
                       {/* Botão Cancelar */}
-                      <button
-                        onClick={() => !isServiceInProgress && onCancelTicket && onCancelTicket(item.passwordArrival.split(" - ")[0])}
-                        disabled={isServiceInProgress}
-                        className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
-                          isServiceInProgress
-                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                            : 'text-red-600 hover:text-red-800 hover:bg-red-50'
-                        }`}
-                        title={isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Cancelar senha"}
-                      >
-                        ❌ Cancelar
-                      </button>
+                      <div className="relative group">
+                        <button
+                          onClick={() => !isServiceInProgress && onCancelTicket && onCancelTicket(item.passwordArrival.split(" - ")[0])}
+                          disabled={isServiceInProgress}
+                          className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
+                            isServiceInProgress
+                              ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                              : 'text-red-600 hover:text-red-800 hover:bg-red-50'
+                          }`}
+                        >
+                          ❌ Cancelar
+                        </button>
+                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                          {isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Cancelar senha"}
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">

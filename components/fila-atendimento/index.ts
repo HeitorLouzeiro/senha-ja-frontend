@@ -12,3 +12,5 @@ export { NoShowDialog } from "./no-show-dialog";
 export { StartServiceDialog } from "./start-service-dialog";
 export { FinishServiceDialog } from "./finish-service-dialog";
 export { TriageErrorDialog } from "./triage-error-dialog";
+export { PauseDialog } from "./pause-dialog";
+export { PauseOverlay } from "./pause-overlay";
