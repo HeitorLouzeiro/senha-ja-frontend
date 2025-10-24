@@ -10,6 +10,10 @@ import {
   QueueTable,
   AttendancePanel,
   ActionButtons,
+  CancelTicketDialog,
+  NoShowDialog,
+  FinishServiceDialog,
+  TriageErrorDialog,
 } from "@/components/fila-atendimento";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -22,8 +26,131 @@ export default function FilaAtendimentoPage() {
 
   // Estados para a fila
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // 📋 DADOS MOCKADOS PARA TESTE - 10 senhas na fila
+  // Inclui senhas normais (A) e prioritárias (P)
+  // 📅 Agendadas vs 🎫 Geradas na hora
   const [queueItems] = useState([
-    // Exemplo de dados - substitua com dados reais da API
+    {
+      id: "1",
+      actions: "👁️",
+      passwordArrival: "A001 - 08:30",
+      scheduled: "08:30", // Agendada
+      service: "Consulta Geral",
+      priority: "Normal",
+      waiting: "5 min",
+      name: "João Silva",
+      details: "📅 Agendado",
+      isScheduled: true,
+    },
+    {
+      id: "2",
+      actions: "👁️",
+      passwordArrival: "P002 - 08:35",
+      scheduled: "-", // Não agendada
+      service: "Atendimento Prioritário",
+      priority: "Preferencial",
+      waiting: "10 min",
+      name: "Maria Santos",
+      details: "🎫 Senha na hora | Idoso",
+      isScheduled: false,
+    },
+    {
+      id: "3",
+      actions: "👁️",
+      passwordArrival: "A003 - 08:40",
+      scheduled: "08:40", // Agendada
+      service: "Documentação",
+      priority: "Normal",
+      waiting: "15 min",
+      name: "Carlos Oliveira",
+      details: "📅 Agendado | Renovação",
+      isScheduled: true,
+    },
+    {
+      id: "4",
+      actions: "👁️",
+      passwordArrival: "P004 - 08:42",
+      scheduled: "-", // Não agendada
+      service: "Consulta Especializada",
+      priority: "Preferencial",
+      waiting: "17 min",
+      name: "Ana Paula Costa",
+      details: "🎫 Senha na hora | Gestante",
+      isScheduled: false,
+    },
+    {
+      id: "5",
+      actions: "👁️",
+      passwordArrival: "A005 - 08:45",
+      scheduled: "-", // Não agendada
+      service: "Informações",
+      priority: "Normal",
+      waiting: "20 min",
+      name: "Pedro Henrique",
+      details: "🎫 Senha na hora",
+      isScheduled: false,
+    },
+    {
+      id: "6",
+      actions: "👁️",
+      passwordArrival: "A006 - 08:50",
+      scheduled: "08:50", // Agendada
+      service: "Consulta Geral",
+      priority: "Normal",
+      waiting: "25 min",
+      name: "Juliana Ferreira",
+      details: "📅 Agendado | Retorno",
+      isScheduled: true,
+    },
+    {
+      id: "7",
+      actions: "👁️",
+      passwordArrival: "P007 - 08:52",
+      scheduled: "-", // Não agendada
+      service: "Atendimento Prioritário",
+      priority: "Preferencial",
+      waiting: "27 min",
+      name: "Roberto Carlos",
+      details: "🎫 Senha na hora | Deficiente",
+      isScheduled: false,
+    },
+    {
+      id: "8",
+      actions: "👁️",
+      passwordArrival: "A008 - 08:55",
+      scheduled: "08:55", // Agendada
+      service: "Documentação",
+      priority: "Normal",
+      waiting: "30 min",
+      name: "Fernanda Lima",
+      details: "📅 Agendado | Certidão",
+      isScheduled: true,
+    },
+    {
+      id: "9",
+      actions: "👁️",
+      passwordArrival: "A009 - 09:00",
+      scheduled: "-", // Não agendada
+      service: "Consulta Geral",
+      priority: "Normal",
+      waiting: "35 min",
+      name: "Lucas Martins",
+      details: "🎫 Senha na hora",
+      isScheduled: false,
+    },
+    {
+      id: "10",
+      actions: "👁️",
+      passwordArrival: "P010 - 09:02",
+      scheduled: "09:02", // Agendada
+      service: "Atendimento Prioritário",
+      priority: "Preferencial",
+      waiting: "37 min",
+      name: "Helena Rodrigues",
+      details: "📅 Agendado | Idosa",
+      isScheduled: true,
+    },
   ]);
 
   // Estado para atendimento atual
@@ -35,21 +162,51 @@ export default function FilaAtendimentoPage() {
     clientDocument: string;
   } | null>(null);
 
-  // Dados de exemplo
+  // Estado para o dialog de cancelamento
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [ticketToCancel, setTicketToCancel] = useState<string>("");
+
+  // Estado para o dialog de não comparecimento
+  const [noShowDialogOpen, setNoShowDialogOpen] = useState(false);
+
+  // Estados para os dialogs de atendimento
+  const [finishServiceDialogOpen, setFinishServiceDialogOpen] = useState(false);
+  const [triageErrorDialogOpen, setTriageErrorDialogOpen] = useState(false);
+  const [isServiceStarted, setIsServiceStarted] = useState(false);
+  const [isStartingService, setIsStartingService] = useState(false);
+
+  // 🏥 SERVIÇOS DISPONÍVEIS - 7 tipos diferentes
   const services = [
-    { id: "1", name: "Serviço 1" },
+    { id: "1", name: "Consulta Geral" },
+    { id: "2", name: "Atendimento Prioritário" },
+    { id: "3", name: "Documentação" },
+    { id: "4", name: "Consulta Especializada" },
+    { id: "5", name: "Informações" },
+    { id: "6", name: "Agendamento" },
+    { id: "7", name: "Renovação" },
   ];
 
   const handleCallNext = () => {
     console.log("Chamar próxima senha");
     // Simular chamada de próxima senha
-    setCurrentAttendance({
-      ticketNumber: "A001",
-      service: "Serviço 1",
-      priority: "Normal",
-      clientName: "",
-      clientDocument: "",
-    });
+    const nextInQueue = queueItems[0];
+    if (nextInQueue) {
+      setCurrentAttendance({
+        ticketNumber: nextInQueue.passwordArrival.split(" - ")[0],
+        service: nextInQueue.service,
+        priority: nextInQueue.priority,
+        clientName: nextInQueue.name,
+        clientDocument: "123.456.789-00",
+      });
+    } else {
+      setCurrentAttendance({
+        ticketNumber: "A001",
+        service: "Consulta Geral",
+        priority: "Normal",
+        clientName: "João Silva",
+        clientDocument: "123.456.789-00",
+      });
+    }
   };
 
   const handleCallAgain = () => {
@@ -57,15 +214,67 @@ export default function FilaAtendimentoPage() {
     // Implementar lógica de chamar novamente
   };
 
-  const handleStartService = () => {
-    console.log("Iniciar atendimento");
-    // Implementar lógica de iniciar atendimento
+  const handleStartService = async () => {
+    // Mostrar loading e iniciar atendimento
+    setIsStartingService(true);
+    console.log("Iniciando atendimento...");
+    console.log(`Senha ${currentAttendance?.ticketNumber} - atendimento em andamento`);
+    
+    // Simular loading (remover quando integrar com API real)
+    setTimeout(() => {
+      setIsServiceStarted(true);
+      setIsStartingService(false);
+    }, 1500);
+    
+    // Implementar lógica de iniciar atendimento (chamar API, iniciar timer)
   };
 
   const handleNoShow = () => {
-    console.log("Não compareceu");
-    // Implementar lógica de não compareceu
+    setNoShowDialogOpen(true);
+  };
+
+  const handleConfirmNoShow = () => {
+    console.log("Não compareceu confirmado");
+    console.log(`Senha ${currentAttendance?.ticketNumber} marcada como não compareceu`);
+    // Implementar lógica de não compareceu (chamar API)
     setCurrentAttendance(null);
+    setIsServiceStarted(false);
+    setNoShowDialogOpen(false);
+  };
+
+  const handleFinishService = () => {
+    setFinishServiceDialogOpen(true);
+  };
+
+  const handleConfirmFinishService = (serviceIds: string[]) => {
+    const serviceNames = serviceIds
+      .map(id => services.find(s => s.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+    
+    console.log("Atendimento encerrado");
+    console.log(`Senha ${currentAttendance?.ticketNumber}`);
+    console.log(`Serviços realizados: ${serviceNames}`);
+    console.log(`IDs dos serviços: ${serviceIds.join(", ")}`);
+    // Implementar lógica de encerrar atendimento (chamar API)
+    setCurrentAttendance(null);
+    setIsServiceStarted(false);
+    setFinishServiceDialogOpen(false);
+  };
+
+  const handleTriageError = () => {
+    setTriageErrorDialogOpen(true);
+  };
+
+  const handleConfirmTriageError = (correctService: string) => {
+    console.log("Erro de triagem reportado");
+    console.log(`Senha ${currentAttendance?.ticketNumber}`);
+    console.log(`Serviço atual: ${currentAttendance?.service}`);
+    console.log(`Serviço correto: ${correctService}`);
+    // Implementar lógica de erro de triagem (chamar API, redirecionar)
+    setCurrentAttendance(null);
+    setIsServiceStarted(false);
+    setTriageErrorDialogOpen(false);
   };
 
   const handleChangeLocation = () => {
@@ -76,6 +285,52 @@ export default function FilaAtendimentoPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Implementar lógica de paginação
+  };
+
+  const handleCancelTicket = (ticketNumber: string) => {
+    setTicketToCancel(ticketNumber);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCallTicketFromTable = (ticketNumber: string, item: any) => {
+    console.log(`Chamando senha ${ticketNumber}`);
+    setCurrentAttendance({
+      ticketNumber: ticketNumber,
+      service: item.service,
+      priority: item.priority,
+      clientName: item.name,
+      clientDocument: "123.456.789-00",
+    });
+  };
+
+  const handleStartServiceFromTable = async (ticketNumber: string, item: any) => {
+    console.log(`Iniciando atendimento da senha ${ticketNumber}`);
+    
+    // Primeiro, chama a senha se não estiver em atendimento
+    if (!currentAttendance || currentAttendance.ticketNumber !== ticketNumber) {
+      setCurrentAttendance({
+        ticketNumber: ticketNumber,
+        service: item.service,
+        priority: item.priority,
+        clientName: item.name,
+        clientDocument: "123.456.789-00",
+      });
+    }
+    
+    // Depois inicia o serviço
+    setIsStartingService(true);
+    setTimeout(() => {
+      setIsServiceStarted(true);
+      setIsStartingService(false);
+    }, 1500);
+  };
+
+  const handleConfirmCancel = (reason: string) => {
+    console.log(`Senha ${ticketToCancel} cancelada. Motivo: ${reason}`);
+    // Implementar lógica de cancelamento
+    // Aqui você faria a chamada para a API
+    setCancelDialogOpen(false);
+    setTicketToCancel("");
   };
 
   return (
@@ -98,9 +353,13 @@ export default function FilaAtendimentoPage() {
                 priority={currentAttendance.priority}
                 clientName={currentAttendance.clientName}
                 clientDocument={currentAttendance.clientDocument}
+                isServiceStarted={isServiceStarted}
+                isStartingService={isStartingService}
                 onCallAgain={handleCallAgain}
                 onStartService={handleStartService}
                 onNoShow={handleNoShow}
+                onFinishService={handleFinishService}
+                onTriageError={handleTriageError}
               />
             </div>
           )}
@@ -109,10 +368,6 @@ export default function FilaAtendimentoPage() {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6">
             {/* Coluna Esquerda - Controles e Serviços */}
             <aside className="xl:col-span-3 2xl:col-span-2 space-y-4">
-              {/* Lista de Serviços */}
-              <div className="bg-white rounded-lg shadow-sm">
-                <ServiceList services={services} />
-              </div>
 
               {/* Botão Chamar Próxima Senha */}
               <CallNextButton onClick={handleCallNext} />
@@ -123,15 +378,13 @@ export default function FilaAtendimentoPage() {
                 onChangeLocation={handleChangeLocation}
               />
 
-              {/* Botões de Ação Adicionais - Apenas quando há atendimento */}
-              {currentAttendance && (
-                <div className="hidden xl:block">
-                  <ActionButtons
-                    onConsultTicket={() => console.log("Consultar senha")}
-                    onEnableNotification={() => console.log("Habilitar notificação")}
-                  />
-                </div>
-              )}
+              {/* Botões de Ação Adicionais */}
+              <div className="hidden xl:block">
+                <ActionButtons
+                  onConsultTicket={() => console.log("Consultar senha")}
+                  onEnableNotification={() => console.log("Habilitar notificação")}
+                />
+              </div>
             </aside>
 
             {/* Coluna Central - Tabela de Filas */}
@@ -139,9 +392,12 @@ export default function FilaAtendimentoPage() {
               <QueueTable
                 items={queueItems}
                 currentPage={currentPage}
-                totalPages={1}
-                totalItems={0}
+                totalPages={2}
+                totalItems={queueItems.length}
                 onPageChange={handlePageChange}
+                onCancelTicket={handleCancelTicket}
+                onCallTicket={handleCallTicketFromTable}
+                isServiceInProgress={currentAttendance !== null}
               />
             </section>
 
@@ -161,19 +417,53 @@ export default function FilaAtendimentoPage() {
           </div>
 
           {/* Botões de Ação Mobile - Aparecem apenas em telas menores */}
-          {currentAttendance && (
-            <div className="xl:hidden">
-              <ActionButtons
-                onConsultTicket={() => console.log("Consultar senha")}
-                onEnableNotification={() => console.log("Habilitar notificação")}
-              />
-            </div>
-          )}
+          <div className="xl:hidden">
+            <ActionButtons
+              onConsultTicket={() => console.log("Consultar senha")}
+              onEnableNotification={() => console.log("Habilitar notificação")}
+            />
+          </div>
         </div>
       </main>
       
       {/* Footer */}
       <Footer />
+
+      {/* Dialog de Cancelamento */}
+      <CancelTicketDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={handleConfirmCancel}
+        ticketNumber={ticketToCancel}
+      />
+
+      {/* Dialog de Não Comparecimento */}
+      <NoShowDialog
+        open={noShowDialogOpen}
+        onOpenChange={setNoShowDialogOpen}
+        onConfirm={handleConfirmNoShow}
+        ticketNumber={currentAttendance?.ticketNumber}
+        clientName={currentAttendance?.clientName}
+      />
+
+      {/* Dialog de Encerrar Atendimento */}
+      <FinishServiceDialog
+        open={finishServiceDialogOpen}
+        onOpenChange={setFinishServiceDialogOpen}
+        onConfirm={handleConfirmFinishService}
+        ticketNumber={currentAttendance?.ticketNumber}
+        clientName={currentAttendance?.clientName}
+        services={services}
+      />
+
+      {/* Dialog de Erro de Triagem */}
+      <TriageErrorDialog
+        open={triageErrorDialogOpen}
+        onOpenChange={setTriageErrorDialogOpen}
+        onConfirm={handleConfirmTriageError}
+        ticketNumber={currentAttendance?.ticketNumber}
+        currentService={currentAttendance?.service}
+      />
     </div>
   );
 }

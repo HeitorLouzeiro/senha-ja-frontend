@@ -8,6 +8,7 @@ interface QueueItem {
   waiting: string;
   name: string;
   details: string;
+  isScheduled?: boolean; // Indica se é agendada ou senha na hora
 }
 
 interface QueueTableProps {
@@ -16,6 +17,9 @@ interface QueueTableProps {
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  onCancelTicket?: (ticketNumber: string) => void;
+  onCallTicket?: (ticketNumber: string, item: QueueItem) => void;
+  isServiceInProgress?: boolean;
 }
 
 export function QueueTable({
@@ -24,6 +28,9 @@ export function QueueTable({
   totalPages,
   totalItems,
   onPageChange,
+  onCancelTicket,
+  onCallTicket,
+  isServiceInProgress = false,
 }: QueueTableProps) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -47,19 +54,38 @@ export function QueueTable({
 
       {/* Filtros */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-            🔍 Filtros:
-          </label>
-          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
-            <option>Todos os Serviços</option>
-          </select>
-          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
-            <option>Todas as Prioridades</option>
-          </select>
-          <button className="sm:ml-auto bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors shadow-sm">
-            Filtrar
-          </button>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              🔍 Filtros:
+            </label>
+            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option>Todos os Serviços</option>
+            </select>
+            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option>Todas as Prioridades</option>
+            </select>
+            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option value="all">Todos os Tipos</option>
+              <option value="scheduled">📅 Agendadas</option>
+              <option value="walk-in">🎫 Senha na Hora</option>
+            </select>
+            <button className="sm:ml-auto bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors shadow-sm">
+              Filtrar
+            </button>
+          </div>
+          
+          {/* Legenda */}
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
+              <span>📅 Agendada</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 bg-white border border-gray-200 rounded"></div>
+              <span>🎫 Senha na Hora</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -107,21 +133,67 @@ export function QueueTable({
               </tr>
             ) : (
               items.map((item) => (
-                <tr key={item.id} className="hover:bg-blue-50 transition-colors">
+                <tr 
+                  key={item.id} 
+                  className={`hover:bg-blue-50 transition-colors ${
+                    item.isScheduled ? 'bg-green-50' : 'bg-white'
+                  }`}
+                >
                   <td className="px-4 py-3 text-sm text-gray-900">
-                    {item.actions}
+                    <div className="flex items-center gap-2">
+                      {/* Botão Chamar Senha */}
+                      <button
+                        onClick={() => !isServiceInProgress && onCallTicket && onCallTicket(item.passwordArrival.split(" - ")[0], item)}
+                        disabled={isServiceInProgress}
+                        className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
+                          isServiceInProgress
+                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                            : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                        }`}
+                        title={isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Chamar senha"}
+                      >
+                        📢 Chamar
+                      </button>
+                      
+                      {/* Botão Cancelar */}
+                      <button
+                        onClick={() => !isServiceInProgress && onCancelTicket && onCancelTicket(item.passwordArrival.split(" - ")[0])}
+                        disabled={isServiceInProgress}
+                        className={`px-2 py-1 rounded transition-colors text-xs font-medium ${
+                          isServiceInProgress
+                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                            : 'text-red-600 hover:text-red-800 hover:bg-red-50'
+                        }`}
+                        title={isServiceInProgress ? "Finalize o atendimento atual primeiro" : "Cancelar senha"}
+                      >
+                        ❌ Cancelar
+                      </button>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {item.passwordArrival}
+                    <div className="flex items-center gap-2">
+                      {item.isScheduled ? (
+                        <span className="text-green-600">📅</span>
+                      ) : (
+                        <span className="text-blue-600">🎫</span>
+                      )}
+                      {item.passwordArrival}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {item.scheduled}
+                    <span className={item.scheduled === "-" ? "text-gray-400" : "text-gray-900 font-medium"}>
+                      {item.scheduled}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {item.service}
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      item.priority === "Preferencial" 
+                        ? "bg-orange-100 text-orange-700" 
+                        : "bg-gray-100 text-gray-700"
+                    }`}>
                       {item.priority}
                     </span>
                   </td>

@@ -7,3 +7,8 @@ export { SettingsPanel } from "./settings-panel";
 export { QueueTable } from "./queue-table";
 export { AttendancePanel } from "./attendance-panel";
 export { ActionButtons } from "./action-buttons";
+export { CancelTicketDialog } from "./cancel-ticket-dialog";
+export { NoShowDialog } from "./no-show-dialog";
+export { StartServiceDialog } from "./start-service-dialog";
+export { FinishServiceDialog } from "./finish-service-dialog";
+export { TriageErrorDialog } from "./triage-error-dialog";
