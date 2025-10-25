@@ -16,6 +16,7 @@ interface DialogContentProps {
 
 interface DialogHeaderProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 interface DialogFooterProps {
@@ -24,6 +25,7 @@ interface DialogFooterProps {
 
 interface DialogTitleProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 interface DialogDescriptionProps {
@@ -83,9 +85,9 @@ export function DialogContent({ children, className = "" }: DialogContentProps) 
   );
 }
 
-export function DialogHeader({ children }: DialogHeaderProps) {
+export function DialogHeader({ children, className = "" }: DialogHeaderProps) {
   return (
-    <div className="px-6 pt-6 pb-4 border-b border-gray-200">
+    <div className={`px-6 pt-6 pb-4 border-b border-gray-200 ${className}`}>
       {children}
     </div>
   );
@@ -99,9 +101,9 @@ export function DialogFooter({ children }: DialogFooterProps) {
   );
 }
 
-export function DialogTitle({ children }: DialogTitleProps) {
+export function DialogTitle({ children, className = "" }: DialogTitleProps) {
   return (
-    <h2 className="text-xl font-bold text-gray-900">
+    <h2 className={`text-xl font-bold text-gray-900 ${className}`}>
       {children}
     </h2>
   );

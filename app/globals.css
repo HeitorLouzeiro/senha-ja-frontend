@@ -133,3 +133,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos para Sonner Toast */
+[data-sonner-toast] {
+  --normal-bg: white !important;
+  --normal-text: #0a0a0a !important;
+  --normal-border: #e5e7eb !important;
+  font-family: inherit;
+}
+
+[data-sonner-toast][data-styled=true] {
+  padding: 1rem !important;
+  gap: 0.75rem !important;
+}
+
+[data-sonner-toast][data-styled=true] [data-title] {
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  color: inherit !important;
+}
+
+[data-sonner-toast][data-styled=true] [data-description] {
+  font-size: 0.8125rem !important;
+  line-height: 1.25rem !important;
+  opacity: 0.8 !important;
+  margin-top: 0.25rem !important;
+  color: inherit !important;
+  display: block !important;
+}
+
+[data-sonner-toast][data-styled=true] [data-button] {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+
+[data-sonner-toast][data-styled=true] [data-icon] {
+  margin-right: 0.5rem !important;
+}
+
+/* Dark mode */
+.dark [data-sonner-toast] {
+  --normal-bg: #1a1a1a !important;
+  --normal-text: #fafafa !important;
+  --normal-border: #333 !important;
+}
