@@ -19,7 +19,7 @@ export function MainActionsGrid() {
       <MenuCard icon={Settings} title="Configurações" />
       <MenuCard icon={Monitor} title="Monitor" />
       <MenuCard icon={BarChart3} title="Relatórios" />
-      <MenuCard icon={Printer} title="Triagem" />
+      <MenuCard icon={Printer} title="Triagem" href="/triagem" />
       <MenuCard icon={Users} title="Usuários" />
     </div>
   );

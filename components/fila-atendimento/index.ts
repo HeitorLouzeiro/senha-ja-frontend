@@ -14,4 +14,3 @@ export { FinishServiceDialog } from "./finish-service-dialog";
 export { TriageErrorDialog } from "./triage-error-dialog";
 export { PauseDialog } from "./pause-dialog";
 export { PauseOverlay } from "./pause-overlay";
-export { AlertToast } from "./alert-toast";
