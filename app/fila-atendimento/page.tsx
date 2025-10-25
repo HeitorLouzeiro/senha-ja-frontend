@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import {
   UnitHeader,
   ServiceList,
@@ -13,7 +14,6 @@ import {
   TriageErrorDialog,
   PauseDialog,
   PauseOverlay,
-  AlertToast,
 } from "@/components/fila-atendimento";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -42,10 +42,6 @@ export default function FilaAtendimentoPage() {
     { name: 'Quito Airport', file: 'quito-mariscal-sucre.wav' },
   ];
 
-  // Estados para toasts de notificação
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  
   // Executar apenas no cliente
   useEffect(() => {
     setIsMounted(true);
@@ -316,8 +312,9 @@ export default function FilaAtendimentoPage() {
       if (currentAttendance && shouldAutoNoShow && autoNoShowOnSecondCall) {
         const ticketNumber = currentAttendance.ticketNumber;
         
-        setToastMessage(`🚫 Senha ${ticketNumber} marcada como não compareceu (2ª chamada)`);
-        setShowToast(true);
+        toast.warning(`Senha ${ticketNumber} marcada como não compareceu`, {
+          description: "2ª chamada sem resposta",
+        });
         
         // Marcar como não compareceu
         setCurrentAttendance(null);
@@ -770,8 +767,9 @@ export default function FilaAtendimentoPage() {
                   onNewPasswordAlertChange={(enabled) => {
                     setNewPasswordAlert(enabled);
                     if (enabled) {
-                      setToastMessage("🔔 Alerta de nova senha ativado");
-                      setShowToast(true);
+                      toast.success("Alerta de nova senha ativado", {
+                        description: "Você será notificado quando uma nova senha entrar na fila",
+                      });
                       // Pedir permissão para notificações
                       if ('Notification' in window && Notification.permission === 'default') {
                         Notification.requestPermission();
@@ -782,24 +780,27 @@ export default function FilaAtendimentoPage() {
                   onKeyboardShortcutsChange={(enabled) => {
                     setKeyboardShortcuts(enabled);
                     if (enabled) {
-                      setToastMessage("⌨️ Atalhos de teclado ativados (F1, F2, F3)");
-                      setShowToast(true);
+                      toast.success("Atalhos de teclado ativados", {
+                        description: "F1: Chamar | F2: Iniciar/Encerrar | F3: Não Compareceu/Erro",
+                      });
                     }
                   }}
                   autoCall={autoCall}
                   onAutoCallChange={(enabled) => {
                     setAutoCall(enabled);
                     if (enabled) {
-                      setToastMessage("🤖 Chamada automática ativada");
-                      setShowToast(true);
+                      toast.success("Chamada automática ativada", {
+                        description: "A próxima senha será chamada automaticamente",
+                      });
                     }
                   }}
                   autoNoShowOnSecondCall={autoNoShowOnSecondCall}
                   onAutoNoShowOnSecondCallChange={(enabled) => {
                     setAutoNoShowOnSecondCall(enabled);
                     if (enabled) {
-                      setToastMessage("🚫 Não compareceu automático ativado (2ª chamada)");
-                      setShowToast(true);
+                      toast.success("Não compareceu automático ativado", {
+                        description: "Marca como não compareceu após 2ª chamada",
+                      });
                     }
                   }}
                 />
@@ -862,13 +863,6 @@ export default function FilaAtendimentoPage() {
           onResume={handleResumeService}
         />
       )}
-
-      {/* Toast de Notificação */}
-      <AlertToast
-        message={toastMessage}
-        show={showToast}
-        onClose={() => setShowToast(false)}
-      />
     </div>
   );
 }
